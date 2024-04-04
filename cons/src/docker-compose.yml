@@ -8,6 +8,15 @@
       ports:
         - 22181:2181
 
+    postgres:
+      image: postgres
+      ports:
+        - 5432:5432
+      environment:
+        POSTGRES_DB: postgres
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: postgres
+
     kafka:
       image: confluentinc/cp-kafka:7.4.4
       depends_on:

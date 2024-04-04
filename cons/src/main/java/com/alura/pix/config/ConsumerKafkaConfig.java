@@ -58,6 +58,15 @@ public class ConsumerKafkaConfig {
         props.put(
                 JsonDeserializer.TRUSTED_PACKAGES,
                 "*"); // escolher quais pacotes o Kafka deve confiar
+        props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 100); // pega uma quantidade de mensagens e vai processando, evita várias conexões de rede
+
+        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest"); // pega as informações mais antigas daquele tópico, mesmo desligado
+
+        props.put(ConsumerConfig.ALLOW_AUTO_CREATE_TOPICS_CONFIG, false); // permitir ou não a criação de tópicos automatizadas
+
+        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false); // verificar PixValidator mostrando o acknowledge salvando e commitando
+        // desativa pega uma msg no consum e já faz o commit, avisando que a mensagem já foi processada, não faz a distruição em outros consm
+
         return new DefaultKafkaConsumerFactory<>(props);
     }
 
