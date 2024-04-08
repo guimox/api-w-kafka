@@ -1,0 +1,19 @@
+meta {
+  name: testando
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:8080/pix
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "chaveOrigem": "123",
+    "chaveDestino": "456",
+    "valor": 1000
+  }
+}

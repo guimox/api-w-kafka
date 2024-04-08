@@ -1,14 +1,19 @@
 package com.alura.pix.config;
 
 import com.alura.pix.dto.PixDTO;
+import com.alura.pix.serdes.PixSerdes;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.kafka.annotation.EnableKafkaStreams;
+import org.springframework.kafka.annotation.KafkaStreamsDefaultConfiguration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
+import org.springframework.kafka.config.KafkaStreamsConfiguration;
 import org.springframework.kafka.core.*;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
@@ -16,11 +21,29 @@ import org.springframework.kafka.support.serializer.JsonSerializer;
 import java.util.HashMap;
 import java.util.Map;
 
+
+import static org.apache.kafka.streams.StreamsConfig.APPLICATION_ID_CONFIG;
+import static org.apache.kafka.streams.StreamsConfig.BOOTSTRAP_SERVERS_CONFIG;
+import static org.apache.kafka.streams.StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG;
+import static org.apache.kafka.streams.StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG;
+
+
 @Configuration
+@EnableKafkaStreams
 public class ConsumerKafkaConfig {
 
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapAddress;
+
+    @Bean(name = KafkaStreamsDefaultConfiguration.DEFAULT_STREAMS_CONFIG_BEAN_NAME)
+    public KafkaStreamsConfiguration kafkaStreamsConfig() {
+        Map props = new HashMap<>();
+        props.put(APPLICATION_ID_CONFIG , "kafka-streams-demo-6");
+        props.put(BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress);
+        props.put(DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
+        props.put(DEFAULT_VALUE_SERDE_CLASS_CONFIG, PixSerdes.class);
+        return new KafkaStreamsConfiguration(props);
+    }
 
     @Bean
     public ProducerFactory<String, PixDTO> producerFactory() {
@@ -42,9 +65,8 @@ public class ConsumerKafkaConfig {
         return new KafkaTemplate<>(producerFactory());
     }
 
-
     @Bean
-    public ConsumerFactory<String, PixDTO> consumerFactory() {
+    public ConsumerFactory<String, String> consumerFactory() {
         Map<String, Object> props = new HashMap<>();
         props.put(
                 ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,
@@ -57,27 +79,17 @@ public class ConsumerKafkaConfig {
                 JsonDeserializer.class);
         props.put(
                 JsonDeserializer.TRUSTED_PACKAGES,
-                "*"); // escolher quais pacotes o Kafka deve confiar
-        props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 100); // pega uma quantidade de mensagens e vai processando, evita várias conexões de rede
-
-        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest"); // pega as informações mais antigas daquele tópico, mesmo desligado
-
-        props.put(ConsumerConfig.ALLOW_AUTO_CREATE_TOPICS_CONFIG, false); // permitir ou não a criação de tópicos automatizadas
-
-        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, true); // verificar PixValidator mostrando o acknowledge salvando e commitando
-        // desativa pega uma msg no consum e já faz o commit, avisando que a mensagem já foi processada, não faz a distruição em outros consm
-
+                "*");
         return new DefaultKafkaConsumerFactory<>(props);
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, PixDTO>
-        kafkaListenerContainerFactory() {
+    public ConcurrentKafkaListenerContainerFactory<String, String>
+    kafkaListenerContainerFactory() {
 
-        ConcurrentKafkaListenerContainerFactory<String, PixDTO> factory =
+        ConcurrentKafkaListenerContainerFactory<String, String> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
         return factory;
     }
-
 }
