@@ -1,3 +1,4 @@
+entrar no container rodando kafka
 docker container exec -it f58579b62983 /bin/bash
 
 listar
