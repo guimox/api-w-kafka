@@ -1,5 +1,10 @@
 docker container exec -it f58579b62983 /bin/bash
 
-listar: kafka-topics --bootstrap-server localhost:29092 --list
+listar
+kafka-topics --bootstrap-server localhost:29092 --list
 
-criar tópico com mais de uma partição: kafka-topics --bootstrap-server localhost:9092 --create --topic pix-topic-partitions --partitions 3 --replication-factor 1
+criar tópico com mais de uma partição
+kafka-topics --bootstrap-server localhost:9092 --create --topic pix-topic-partitions --partitions 3 --replication-factor 1
+
+ouvir tópico
+kafka-console-consumer --bootstrap-server localhost:9092 --topic employee-testing --from-beginning
